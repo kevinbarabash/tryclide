@@ -1,32 +1,10 @@
-const lintWorker = new Worker('build/lint_worker.js');
-const transformWorker = new Worker('build/transform_worker.js');
+const React = require('react');
+const ReactDOM = require('react-dom');
 
-const editor = ace.edit("editor");
-editor.setTheme("ace/theme/chrome");
+const App = require('./app.js');
 
-const session = editor.getSession();
-session.setMode("ace/mode/javascript");
-session.setUseWorker(false);
+const container = document.createElement('div');
+container.style.height = '100%';
+document.body.appendChild(container);
 
-// TODO: add multiple tabs to the editor
-editor.on('change', function(e) {
-
-    const code = editor.getValue();
-
-    // TODO: debounce changes
-    lintWorker.postMessage({
-        code: code
-    });
-
-    transformWorker.postMessage({
-        code: code
-    });
-});
-
-lintWorker.addEventListener('message', function(message) {
-    console.log(message.data.messages);
-});
-
-transformWorker.addEventListener('message', function(message) {
-    //console.log(message.data.code);
-});
+ReactDOM.render(<App/>, container);
