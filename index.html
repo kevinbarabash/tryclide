@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Relive Editor</title>
+    <style type="text/css" media="screen">
+        #editor {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="editor">
+const a = [1,2,3];
+
+a.forEach(x => console.log(x));
+
+for (const x of a) {
+    console.log(x);
+}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js"></script>
+<script src="build/index.js"></script>
+
+</body>
+</html>
