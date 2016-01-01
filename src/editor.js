@@ -3,13 +3,23 @@ const React = require('react');
 const { Component } = React;
 
 class Editor extends Component {
+    constructor() {
+        super();
+
+        this.state = {
+            selectionIndex: 0,
+            editor: null,
+        };
+
+        this.stopListening = false;
+    }
+
     static propTypes = {
         onChange: React.PropTypes.func
     };
 
     static defaultProps = {
         fontSize: 16,
-        files: [ 'main.js', 'sprite.js', 'menu.js' ],
     };
 
     componentDidMount() {
@@ -24,16 +34,39 @@ class Editor extends Component {
         session.setUseWorker(false);
 
         editor.on('change', e => {
-            const code = editor.getValue();
+            if (!this.stopListening) {
+                const code = editor.getValue();
+                const { selectedFile } = this.state;
 
-            if (this.props.onChange) {
-                this.props.onChange(code);
+                if (this.props.onChange) {
+                    this.props.onChange(selectedFile, code);
+                }
             }
         });
+
+        const selectedFile = Object.keys(this.props.files)[0];
+
+        if (selectedFile) {
+            editor.setValue(this.props.files[selectedFile]);
+            editor.clearSelection();
+        }
+
+        this.setState({ editor, selectedFile });
     }
 
     componentWillReceiveProps(nextProps) {
 
+    }
+
+    updateTab(file) {
+        const { editor } = this.state;
+
+        this.stopListening = true;
+        editor.setValue(this.props.files[file]);
+        editor.clearSelection();
+        this.stopListening = false;
+
+        this.setState({ selectedFile: file });
     }
 
     render() {
@@ -56,14 +89,17 @@ class Editor extends Component {
             width: 150,
             padding: 8,
             textAlign: 'center',
-            color: '#888'
+            color: '#888',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+            borderLeft: 'solid transparent 2px'
         };
 
         const activeTab = {
             ...tabStyle,
             backgroundColor: 'white',
             color: '#222',
-            borderLeft: 'solid blue 2px'
+            borderLeft: 'solid transparent 2px',
         };
 
         const headerStyle = {
@@ -71,17 +107,28 @@ class Editor extends Component {
             padding: 0
         };
 
-        const {files} = this.props;
-
-        const selectionIndex = 0;
+        const { files } = this.props;
+        const { selectedFile } = this.state;
 
         return <div style={style}>
             <ul style={headerStyle}>
-                {files.map((file, index) => {
-                    if (index === selectionIndex) {
-                        return <li key={file} style={activeTab}>{file}</li>;
+                {Object.keys(files).map(file => {
+                    if (file === selectedFile) {
+                        return <li
+                            key={file}
+                            style={activeTab}
+                            onClick={() => this.updateTab(file)}
+                        >
+                            {file}
+                        </li>;
                     } else {
-                        return <li key={file} style={tabStyle}>{file}</li>;
+                        return <li
+                            key={file}
+                            style={tabStyle}
+                            onClick={() => this.updateTab(file)}
+                        >
+                            {file}
+                        </li>;
                     }
                 })}
             </ul>

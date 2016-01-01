@@ -35,10 +35,27 @@ transformWorker.addEventListener('message', function(message) {
 class App extends Component {
     constructor() {
         super();
+
+        this.state = {
+            files: {
+                'main.js': 'console.log("hello, world!");\nconst foo = "bar";',
+                'sprites.js': "class Sprite {\n    constructor() { }\n}\n",
+                'menu.js': ""
+            }
+        };
     }
 
-    handleChange = code => {
+    handleChange = (selectedFile, code) => {
+        console.log(selectedFile);
         console.log(code);
+        if (selectedFile) {
+            this.setState({
+                files: {
+                    ...this.state.files,
+                    [selectedFile]: code
+                }
+            });
+        }
     };
 
     render() {
@@ -51,9 +68,12 @@ class App extends Component {
             padding: 5
         };
 
+        const { files } = this.state;
+
         return <div style={style}>
             <Browser/>
             <Editor
+                files={files}
                 width={800}
                 height={600}
                 fontSize={14}
