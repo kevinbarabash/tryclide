@@ -19,6 +19,7 @@ self.addEventListener('message', e => {
             messages: messages
         });
     } catch (e) {
+        console.log(e);
         // TODO: pass error back to editor
     }
 });

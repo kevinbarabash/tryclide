@@ -1,15 +1,13 @@
-const babel = require('babel-core');
-const es2015 = require('babel-preset-es2015-loose');
+importScripts('../lib/babel.min.js');
 
 self.addEventListener('message', e => {
     const {code} = e.data;
 
     try {
         const start = Date.now();
-        const result = babel.transform(code, {
-            presets: [es2015],
+        const result = Babel.transform(code, {
+            presets: ['es2015'],
             compact: true,
-
         });
         console.log("elapsed = " + (Date.now() - start));
 
@@ -18,6 +16,7 @@ self.addEventListener('message', e => {
             code: result.code
         });
     } catch (e) {
+        console.log(e);
         // TODO: pass error back to editor
     }
 });
