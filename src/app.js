@@ -37,7 +37,7 @@ class App extends Component {
         super();
 
         this.state = {
-            files: {
+            fileList: {
                 'main.js': 'console.log("hello, world!");\nconst foo = "bar";',
                 'sprites.js': "class Sprite {\n    constructor() { }\n}\n",
                 'menu.js': ""
@@ -58,6 +58,10 @@ class App extends Component {
         }
     };
 
+    handleOpenFile = file => {
+
+    };
+
     render() {
         const style = {
             backgroundColor: '#DDD',
@@ -68,12 +72,14 @@ class App extends Component {
             padding: 5
         };
 
-        const { files } = this.state;
+        const { fileList } = this.state;
 
         return <div style={style}>
-            <Browser/>
+            <Browser
+                onOpenFile={this.handleOpenFile}
+            />
             <Editor
-                files={files}
+                fileList={fileList}
                 width={800}
                 height={600}
                 fontSize={14}

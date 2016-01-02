@@ -7,6 +7,12 @@ class Browser extends Component {
         files: [ 'main.js', 'sprite.js', 'menu.js', 'really_really_long_filename.js' ]
     };
 
+    handleDoubleClick(file) {
+        if (this.props.onOpenFile) {
+            this.props.onOpenFile(file);
+        }
+    }
+
     render() {
         const style = {
             listStyleType: 'none',
@@ -19,7 +25,14 @@ class Browser extends Component {
         };
 
         return <ul style={style}>
-            {this.props.files.map(file => <li key={file}>{file}</li>)}
+            {this.props.files.map(file =>
+                <li
+                    key={file}
+                    onDoubleClick={() => this.handleDoubleClick(file)}
+                >
+                    {file}
+                </li>
+            )}
         </ul>
     }
 }
