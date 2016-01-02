@@ -19,26 +19,6 @@ transformWorker.addEventListener('message', function(message) {
 
 
 class App extends Component {
-    constructor() {
-        super();
-
-        this.state = {
-            fileList: {
-                'main.js': 'console.log("hello, world!");\nconst foo = "bar";',
-                'sprites.js': "class Sprite {\n    constructor() { }\n}\n",
-                'menu.js': ""
-            }
-        };
-    }
-
-    handleChange = (selectedFile, code) => {
-
-    };
-
-    handleOpenFile = file => {
-
-    };
-
     render() {
         const style = {
             backgroundColor: '#DDD',

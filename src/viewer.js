@@ -9,6 +9,49 @@ class Viewer extends Component {
         super();
     }
 
+    componentDidMount() {
+
+    }
+
+    componentWillReceiveProps(newProps) {
+        const iframe = this.refs.iframe;
+        const message = {
+            files: newProps.files
+        };
+
+        const origin = '*';
+
+        console.log('post message');
+        iframe.contentWindow.postMessage(message, origin);
+
+        //const html = this.props.files['index.html'];
+        //const css = this.props.files['styles.css'];
+        //const main = this.props.files['main.js'];
+        //
+        //const cssBlob = new Blob([css], { type: 'text/css'});
+        //const cssUrl = URL.createObjectURL(cssBlob);
+        //
+        //const mainBlob = new Blob([main], { type: 'text/javascript'});
+        //const mainUrl = URL.createObjectURL(mainBlob);
+        //
+        //const htmlBlob = new Blob([
+        //    html.replace("style.css", cssUrl.toString()).replace("main.js", mainUrl.toString())
+        //], { type: 'text/html'});
+        //const htmlUrl = URL.createObjectURL(htmlBlob);
+    }
+
+    handleLoad = () => {
+        console.log("load");
+        const iframe = this.refs.iframe;
+        const message = {
+            files: this.props.files
+        };
+
+        const origin = '*';
+
+        iframe.contentWindow.postMessage(message, origin);
+    };
+
     render() {
         const style = {
             width: 500,
@@ -18,22 +61,7 @@ class Viewer extends Component {
             background: 'white',
         };
 
-        const html = this.props.files['index.html'];
-        const css = this.props.files['styles.css'];
-        const main = this.props.files['main.js'];
-
-        const cssBlob = new Blob([css], { type: 'text/css'});
-        const cssUrl = URL.createObjectURL(cssBlob);
-
-        const mainBlob = new Blob([main], { type: 'text/javascript'});
-        const mainUrl = URL.createObjectURL(mainBlob);
-
-        const htmlBlob = new Blob([
-            html.replace("style.css", cssUrl.toString()).replace("main.js", mainUrl.toString())
-        ], { type: 'text/html'});
-        const htmlUrl = URL.createObjectURL(htmlBlob);
-
-        return <iframe style={style} src={htmlUrl}>
+        return <iframe ref="iframe" style={style} src={'src/iframe.html'} onLoad={this.handleLoad}>
 
         </iframe>;
     }
