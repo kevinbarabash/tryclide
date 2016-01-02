@@ -2,7 +2,7 @@ const { createStore } = require('redux');
 
 const initialState = {
     files: {
-        'index.html': '<html>\n<head>\n</head>\n<body>\n<h1>Hello, world</h1>\n</body>\n</html>\n',
+        'index.html': '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="style.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<script src="main.js"></script>\n</body>\n</html>\n',
         'styles.css': 'h1 {\n    color: blue;\n}\n',
         'main.js': 'console.log("hello, world!");\n'
     },
@@ -51,7 +51,7 @@ const editorReducer = (state = initialState, action) => {
                     ...state.files,
                     [state.editor.activeFile]: action.code
                 }
-            }
+            };
         case 'SELECT_TAB':
             return {
                 ...state,

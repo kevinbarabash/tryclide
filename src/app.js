@@ -4,7 +4,7 @@ const { Component } = React;
 
 const Browser = require('./browser.js');
 const Editor = require('./editor.js');
-const store = require('./store.js');
+const Viewer = require('./viewer.js');
 
 const lintWorker = new Worker('build/lint_worker.js');
 const transformWorker = new Worker('build/transform_worker.js');
@@ -54,11 +54,10 @@ class App extends Component {
                 onOpenFile={this.handleOpenFile}
             />
             <Editor
-                width={800}
-                height={600}
                 fontSize={14}
                 onChange={this.handleChange}
             />
+            <Viewer/>
         </div>;
     }
 }
