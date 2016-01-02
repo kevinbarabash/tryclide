@@ -10,7 +10,7 @@ class Editor extends Component {
         super();
 
         this.state = {
-            editor: null,
+            editor: null
         };
 
         this.stopListening = false;
@@ -21,6 +21,20 @@ class Editor extends Component {
     };
 
     componentDidMount() {
+        this.lintWorker = new Worker('build/lint_worker.js');
+
+        this.lintWorker.addEventListener('message', e => {
+            const {code, messages} = e.data;
+            if (messages.length > 0) {
+
+            } else {
+                this.props.dispatch({
+                    type: 'UPDATE_FILE',
+                    code: code
+                })
+            }
+        });
+
         const container = this.refs.container;
 
         const editor = ace.edit(container);
@@ -36,10 +50,16 @@ class Editor extends Component {
             if (!this.stopListening) {
                 const code = editor.getValue();
 
-                this.props.dispatch({
-                    type: 'UPDATE_FILE',
-                    code: code
-                })
+                if (this.props.editor.activeFile.endsWith('.js')) {
+                    this.lintWorker.postMessage({
+                        code: code
+                    });
+                } else {
+                    this.props.dispatch({
+                        type: 'UPDATE_FILE',
+                        code: code
+                    })
+                }
             }
         });
 

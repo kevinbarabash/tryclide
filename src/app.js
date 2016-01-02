@@ -6,12 +6,8 @@ const Browser = require('./browser.js');
 const Editor = require('./editor.js');
 const Viewer = require('./viewer.js');
 
-const lintWorker = new Worker('build/lint_worker.js');
 const transformWorker = new Worker('build/transform_worker.js');
 
-lintWorker.addEventListener('message', function(message) {
-    console.log(message.data.messages);
-});
 
 transformWorker.addEventListener('message', function(message) {
     //console.log(message.data.code);

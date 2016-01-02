@@ -15,8 +15,8 @@ self.addEventListener('message', e => {
         });
 
         self.postMessage({
-            channel: 'lint',
-            messages: messages
+            messages: messages,
+            code: code,
         });
     } catch (e) {
         console.log(e);

@@ -9,17 +9,21 @@ const require = function(path) {
         if (files[path]) {
             const module = {};
             const code = files[path];
-            const func = new Function("module", code);
-            func(module);
-            modules[path] = module.exports;
-            return modules[path];
+            try {
+                const func = new Function("module", code);
+                func(module);
+                modules[path] = module.exports;
+                return modules[path];
+            } catch (e) {
+                throw Error(`runtime error in ${path}`);
+            }
         } else {
-            throw Error("module doesn't exist");
+            throw Error(`${path} module doesn't exist`);
         }
     }
 };
 
-window.addEventListener('message', function(e) {
+window.addEventListener('message', e => {
     Object.keys(e.data.files).forEach(filename => {
         if (e.data.files[filename] !== files[filename]) {
             delete modules[filename];
@@ -38,4 +42,14 @@ window.addEventListener('message', function(e) {
     const main = files['main.js'];
     const func = new Function(main);
     func();
+});
+
+window.addEventListener('error', e => {
+    // TODO: figure out how to get better stack traces, maybe use blobs
+    // if we use async/await for require statements then this might work
+    console.log('runtime error: %o', e);
+    console.log('stack trace:');
+    console.log(e.error.stack);
+    e.stopPropagation();
+    e.preventDefault();
 });
