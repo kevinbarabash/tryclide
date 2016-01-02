@@ -1,16 +1,16 @@
 const React = require('react');
 
 const { Component } = React;
+const { connect } = require('react-redux');
+
+const store = require('./store.js');
 
 class Browser extends Component {
-    static defaultProps = {
-        files: [ 'main.js', 'sprite.js', 'menu.js', 'really_really_long_filename.js' ]
-    };
-
-    handleDoubleClick(file) {
-        if (this.props.onOpenFile) {
-            this.props.onOpenFile(file);
-        }
+    handleDoubleClick(filename) {
+        store.dispatch({
+            type: 'OPEN_FILE',
+            filename: filename
+        });
     }
 
     render() {
@@ -24,17 +24,19 @@ class Browser extends Component {
             overflow: 'scroll'
         };
 
+        const files = Object.keys(this.props.files);
+
         return <ul style={style}>
-            {this.props.files.map(file =>
+            {files.map(filename =>
                 <li
-                    key={file}
-                    onDoubleClick={() => this.handleDoubleClick(file)}
+                    key={filename}
+                    onDoubleClick={() => this.handleDoubleClick(filename)}
                 >
-                    {file}
+                    {filename}
                 </li>
             )}
         </ul>
     }
 }
 
-module.exports = Browser;
+module.exports = connect(state => state)(Browser);

@@ -4,24 +4,10 @@ const { Component } = React;
 
 const Browser = require('./browser.js');
 const Editor = require('./editor.js');
+const store = require('./store.js');
 
 const lintWorker = new Worker('build/lint_worker.js');
 const transformWorker = new Worker('build/transform_worker.js');
-
-// TODO: add multiple tabs to the editor
-//editor.on('change', function(e) {
-//
-//    const code = editor.getValue();
-//
-//    // TODO: debounce changes
-//    lintWorker.postMessage({
-//        code: code
-//    });
-//
-//    transformWorker.postMessage({
-//        code: code
-//    });
-//});
 
 lintWorker.addEventListener('message', function(message) {
     console.log(message.data.messages);
@@ -46,16 +32,7 @@ class App extends Component {
     }
 
     handleChange = (selectedFile, code) => {
-        console.log(selectedFile);
-        console.log(code);
-        if (selectedFile) {
-            this.setState({
-                files: {
-                    ...this.state.files,
-                    [selectedFile]: code
-                }
-            });
-        }
+
     };
 
     handleOpenFile = file => {
@@ -72,14 +49,11 @@ class App extends Component {
             padding: 5
         };
 
-        const { fileList } = this.state;
-
         return <div style={style}>
             <Browser
                 onOpenFile={this.handleOpenFile}
             />
             <Editor
-                fileList={fileList}
                 width={800}
                 height={600}
                 fontSize={14}

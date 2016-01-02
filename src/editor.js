@@ -1,65 +1,9 @@
 const React = require('react');
 
 const { Component } = React;
+const { connect } = require('react-redux');
 
-class Tab extends Component {
-    constructor() {
-        super();
-
-        this.state = {
-            hover: false
-        };
-    }
-
-    handleMouseOver = (e) => {
-        this.setState({ hover: true });
-    };
-
-    handleMouseOut = (e) => {
-        this.setState({ hover: false });
-    };
-
-    handleButtonClick = (e) => {
-        e.stopPropagation();
-        if (this.props.onCloseTab) {
-            this.props.onCloseTab(this.props.label);
-        }
-    };
-
-    render() {
-        const tabStyle = {
-            width: 150,
-            display: 'inline-block',
-            padding: 8,
-            textAlign: 'center',
-            cursor: 'pointer',
-            position: 'relative',
-            backgroundColor: this.props.active ? 'white' : 'transparent'
-        };
-
-        const buttonStyle = {
-            position: 'absolute',
-            right: 8,
-        };
-
-        const button = <span
-            style={buttonStyle}
-            onClick={this.handleButtonClick}
-        >
-            x
-        </span>;
-
-        return <li
-            style={tabStyle}
-            onClick={this.props.onClick}
-            onMouseEnter={this.handleMouseOver}
-            onMouseLeave={this.handleMouseOut}
-        >
-            {this.props.label}
-            {this.state.hover && button}
-        </li>;
-    }
-}
+const Tab = require('./tab.js');
 
 class Editor extends Component {
     constructor() {
@@ -67,19 +11,10 @@ class Editor extends Component {
 
         this.state = {
             editor: null,
-            tabList: [
-                'main.js',
-                'sprites.js',
-                'menu.js'
-            ]
         };
 
         this.stopListening = false;
     }
-
-    static propTypes = {
-        onChange: React.PropTypes.func
-    };
 
     static defaultProps = {
         fontSize: 16,
@@ -91,6 +26,7 @@ class Editor extends Component {
         const editor = ace.edit(container);
         editor.setTheme("ace/theme/chrome");
         editor.setFontSize(this.props.fontSize);
+        editor.$blockScrolling = Infinity
 
         const session = editor.getSession();
         session.setMode("ace/mode/javascript");
@@ -99,43 +35,43 @@ class Editor extends Component {
         editor.on('change', e => {
             if (!this.stopListening) {
                 const code = editor.getValue();
-                const { selectedFile } = this.state;
 
-                if (this.props.onChange) {
-                    this.props.onChange(selectedFile, code);
-                }
+                this.props.dispatch({
+                    type: 'UPDATE_FILE',
+                    code: code
+                })
             }
         });
 
-        const selectedFile = this.state.tabList[0];
+        const activeFile = this.props.editor.activeFile;
+        const contents = this.props.files[activeFile];
 
-        if (selectedFile) {
-            editor.setValue(this.props.fileList[selectedFile]);
+        if (activeFile) {
+            editor.setValue(contents);
             editor.clearSelection();
         }
 
-        this.setState({ editor, selectedFile });
+        this.setState({ editor });
     }
 
-    updateTab(file) {
-        this.setContents(this.props.fileList[file]);
-        this.setState({ selectedFile: file });
+    componentWillReceiveProps(newProps) {
+        if (this.props.editor.activeFile !== newProps.editor.activeFile) {
+            this.setContents(newProps.files[newProps.editor.activeFile]);
+        }
+    }
+
+    updateTab(filename) {
+        this.props.dispatch({
+            type: 'SELECT_TAB',
+            filename: filename
+        });
     }
 
     handleCloseTab = filename => {
-        const { selectedFile } = this.state;
-
-        const tabList = this.state.tabList.filter(name => name != filename);
-        const newSelectedFile = selectedFile === filename ? tabList[0] : selectedFile;
-
-        this.setState({
-            tabList,
-            selectedFile: newSelectedFile
+        this.props.dispatch({
+            type: 'CLOSE_FILE',
+            filename: filename
         });
-
-        if (newSelectedFile !== selectedFile) {
-            this.setContents(this.props.fileList[newSelectedFile]);
-        }
     };
 
     setContents(contents) {
@@ -167,16 +103,16 @@ class Editor extends Component {
             padding: 0
         };
 
-        const { tabList, selectedFile } = this.state;
+        const { activeFile } = this.props.editor;
 
         return <div style={style}>
             <ul style={headerStyle}>
-                {tabList.map(file => {
+                {this.props.editor.openFiles.map(filename => {
                     return <Tab
-                        key={file}
-                        active={file === selectedFile}
-                        label={file}
-                        onClick={() => this.updateTab(file)}
+                        key={filename}
+                        active={filename === activeFile}
+                        label={filename}
+                        onClick={() => this.updateTab(filename)}
                         onCloseTab={this.handleCloseTab}
                     />;
                 })}
@@ -186,4 +122,6 @@ class Editor extends Component {
     }
 }
 
-module.exports = Editor;
+const select = state => state;
+
+module.exports = connect(select)(Editor);
