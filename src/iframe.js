@@ -1,14 +1,31 @@
 const modules = {};
-const files = {};
+const compiledFiles = {};
+const sourceFiles = {};
+
+const babelWorker = new Worker('src/babel_worker.js');
+
+const compile = function(filename, code) {
+    return new Promise((resolve, reject) => {
+        babelWorker.postMessage({
+            filename: filename,
+            code: code
+        });
+        babelWorker.addEventListener('message', e => {
+            resolve(e.data);
+        });
+    });
+};
 
 // TODO: differentiate local includes vs global modules
-const require = function(path) {
+window.require = function(path) {
     if (modules[path]) {
         return modules[path];
     } else {
-        if (files[path]) {
+        const code = compiledFiles[path];
+
+        if (code) {
             const module = {};
-            const code = files[path];
+
             try {
                 const func = new Function("module", code);
                 func(module);
@@ -23,25 +40,60 @@ const require = function(path) {
     }
 };
 
+let inProgress = false;
+
 window.addEventListener('message', e => {
-    Object.keys(e.data.files).forEach(filename => {
-        if (e.data.files[filename] !== files[filename]) {
-            delete modules[filename];
-            files[filename] = e.data.files[filename];
+    if (inProgress) {
+        return;
+    } else {
+        inProgress = true;
+    }
+
+    const changedFiles = Object.keys(e.data.files).filter(
+        filename => e.data.files[filename] !== sourceFiles[filename]
+    );
+
+    for (const filename of changedFiles) {
+        const code = e.data.files[filename];
+
+        sourceFiles[filename] = code;
+    }
+
+    // TODO: if a user makes a change interrupt current processing
+    (async () => {
+        for (var i = 0; i < changedFiles.length; i++) {
+            const filename = changedFiles[i];
+            if (!filename.endsWith('.js')) {
+                continue;
+            }
+
+            const code = sourceFiles[filename];
+
+            if (code) {
+                const result = await compile(filename, code);
+                compiledFiles[result.filename] = result.code;
+                delete modules[filename];
+            }
+            // TODO: send messages of compilation progress
         }
-    });
 
-    const html = files['index.html'];
+        const html = sourceFiles['index.html'];
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(html, 'text/html');
+        document.body = dom.body;
 
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(html, 'text/html');
-    console.log(dom.body);
+        const main = compiledFiles['main.js'];
+        const func = new Function(main);
 
-    document.body = dom.body;
-
-    const main = files['main.js'];
-    const func = new Function(main);
-    func();
+        try {
+            func();
+        } catch (e) {
+            // TODO: report runtime error to parent frame
+            console.log(e);
+        } finally {
+            inProgress = false;
+        }
+    })();
 });
 
 window.addEventListener('error', e => {

@@ -2,9 +2,8 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        'lint_worker': './src/lint_worker.js',
-        'transform_worker': './src/transform_worker.js',
         'index': './src/index.js',
+        'iframe': './src/iframe.js',
     },
     output: {
         path: path.join(__dirname, 'build'),
@@ -20,7 +19,9 @@ module.exports = {
                 plugins: [
                     'transform-class-properties',
                     'syntax-object-rest-spread',
-                    'transform-object-rest-spread'
+                    'transform-object-rest-spread',
+                    'syntax-async-functions',
+                    'transform-async-to-generator'
                 ]
             }
         }, {

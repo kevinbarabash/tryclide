@@ -21,7 +21,6 @@ class Viewer extends Component {
 
         const origin = '*';
 
-        console.log('post message');
         iframe.contentWindow.postMessage(message, origin);
 
         //const html = this.props.files['index.html'];
@@ -41,7 +40,6 @@ class Viewer extends Component {
     }
 
     handleLoad = () => {
-        console.log("load");
         const iframe = this.refs.iframe;
         const message = {
             files: this.props.files
@@ -61,7 +59,7 @@ class Viewer extends Component {
             background: 'white',
         };
 
-        return <iframe ref="iframe" style={style} src={'src/iframe.html'} onLoad={this.handleLoad}>
+        return <iframe ref="iframe" style={style} src={'iframe.html'} onLoad={this.handleLoad}>
 
         </iframe>;
     }

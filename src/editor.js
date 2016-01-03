@@ -5,6 +5,21 @@ const { connect } = require('react-redux');
 
 const Tab = require('./tab.js');
 
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function(...args) {
+        var context = this;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+}
+
 class Editor extends Component {
     constructor() {
         super();
@@ -21,17 +36,13 @@ class Editor extends Component {
     };
 
     componentDidMount() {
-        this.lintWorker = new Worker('build/lint_worker.js');
-
+        this.lintWorker = new Worker('src/lint_worker.js');
         this.lintWorker.addEventListener('message', e => {
             const {code, messages} = e.data;
             if (messages.length > 0) {
-
+                console.log('lint: %o', messages);
             } else {
-                this.props.dispatch({
-                    type: 'UPDATE_FILE',
-                    code: code
-                })
+                this.updateCode(code);
             }
         });
 
@@ -51,14 +62,11 @@ class Editor extends Component {
                 const code = editor.getValue();
 
                 if (this.props.editor.activeFile.endsWith('.js')) {
-                    this.lintWorker.postMessage({
-                        code: code
-                    });
+                    // JavaScript files
+                    this.lintCode(code);
                 } else {
-                    this.props.dispatch({
-                        type: 'UPDATE_FILE',
-                        code: code
-                    })
+                    // HTML files
+                    this.updateCode(code);
                 }
             }
         });
@@ -80,7 +88,20 @@ class Editor extends Component {
         }
     }
 
-    updateTab(filename) {
+    updateCode = debounce(code => {
+        this.props.dispatch({
+            type: 'UPDATE_FILE',
+            code: code
+        })
+    }, 250);
+
+    lintCode = debounce(code => {
+        this.lintWorker.postMessage({
+            code: code
+        });
+    }, 250);
+
+    selectTab(filename) {
         this.props.dispatch({
             type: 'SELECT_TAB',
             filename: filename
@@ -132,7 +153,7 @@ class Editor extends Component {
                         key={filename}
                         active={filename === activeFile}
                         label={filename}
-                        onClick={() => this.updateTab(filename)}
+                        onClick={() => this.selectTab(filename)}
                         onCloseTab={this.handleCloseTab}
                     />;
                 })}
