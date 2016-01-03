@@ -16,6 +16,20 @@ const compile = function(filename, code) {
     });
 };
 
+const originalRequestAnimationFrame = window.requestAnimationFrame;
+let i = 0;
+
+const createRequestAnimationFrame = () => {
+    const j = i++;
+    const currentRequestAnimationFrame = callback => {
+        console.log(j);
+        if (window.requestAnimationFrame === currentRequestAnimationFrame) {
+            originalRequestAnimationFrame(callback);
+        }
+    };
+    return currentRequestAnimationFrame;
+};
+
 // TODO: differentiate local includes vs global modules
 window.require = function(path) {
     if (modules[path]) {
@@ -83,10 +97,17 @@ window.addEventListener('message', e => {
         document.body = dom.body;
 
         const main = compiledFiles['main.js'];
-        const func = new Function(main);
+        const func = new Function("requestAnimationFrame", main);
+
+        // TODO: since requestAnimationFrame gets called every 16ms
+        // we could redefine it so that it doesn't call the original
+        // and then when it gets called again because there's still
+        // stuff in the queue it will stop looping
+        const requestAnimationFrame = createRequestAnimationFrame();
+        window.requestAnimationFrame = requestAnimationFrame;
 
         try {
-            func();
+            func(requestAnimationFrame);
         } catch (e) {
             // TODO: report runtime error to parent frame
             console.log(e);
