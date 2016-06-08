@@ -95,6 +95,26 @@ window.addEventListener('message', e => {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
         document.body = dom.body;
+        for (var i = 0; i < dom.head.children.length; i++) {
+            const child = dom.head.children[i];
+
+            // TODO: only add links for stylesheets that have changed
+            // TODO: keep a dictionary so we can remove old stylesheets
+            if (child.tagName === 'LINK') {
+                const href = child.getAttribute('href');
+                const src = sourceFiles[href];
+
+                const blob = new Blob([src], {type : 'text/css'});
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = url;
+
+                document.head.appendChild(link);
+                // TODO: create a URL param from src
+            }
+        }
 
         const main = compiledFiles['main.js'];
         const func = new Function("requestAnimationFrame", main);

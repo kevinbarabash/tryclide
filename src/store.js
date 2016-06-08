@@ -2,7 +2,7 @@ const { createStore } = require('redux');
 
 const initialState = {
     files: {
-        'index.html': '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="style.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<script src="main.js"></script>\n</body>\n</html>\n',
+        'index.html': '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="styles.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<script src="main.js"></script>\n</body>\n</html>\n',
         'styles.css': 'h1 {\n    color: blue;\n}\n',
         'main.js': 'const message = require("message.js");\nconsole.log(message);\n',
         'message.js': 'module.exports = "hello, world!";\n'
