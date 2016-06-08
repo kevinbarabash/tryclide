@@ -6,13 +6,6 @@ const Browser = require('./browser.js');
 const Editor = require('./editor.js');
 const Viewer = require('./viewer.js');
 
-const transformWorker = new Worker('build/transform_worker.js');
-
-
-transformWorker.addEventListener('message', function(message) {
-    //console.log(message.data.code);
-});
-
 
 class App extends Component {
     render() {

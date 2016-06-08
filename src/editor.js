@@ -84,7 +84,19 @@ class Editor extends Component {
 
     componentWillReceiveProps(newProps) {
         if (this.props.editor.activeFile !== newProps.editor.activeFile) {
+            const editor = this.state.editor;
+            const session = editor.getSession();
+            const activeFile = newProps.editor.activeFile;
+
             this.setContents(newProps.files[newProps.editor.activeFile]);
+
+            if (activeFile.endsWith('.js')) {
+                session.setMode("ace/mode/javascript");
+            } else if (activeFile.endsWith('.css')) {
+                session.setMode("ace/mode/css");
+            } else if (activeFile.endsWith('.html')) {
+                session.setMode("ace/mode/html");
+            }
         }
     }
 
