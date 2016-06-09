@@ -2,6 +2,9 @@ const modules = {};
 const compiledFiles = {};
 const sourceFiles = {};
 
+const srcUrlToBlobUrl = {};
+const blobUrlToSrcUrl = {};
+
 const babelWorker = new Worker('src/babel_worker.js');
 
 const compile = function(filename, code) {
@@ -95,24 +98,64 @@ window.addEventListener('message', e => {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
         document.body = dom.body;
+
+        const cssLinks = [];
         for (var i = 0; i < dom.head.children.length; i++) {
             const child = dom.head.children[i];
-
-            // TODO: only add links for stylesheets that have changed
-            // TODO: keep a dictionary so we can remove old stylesheets
             if (child.tagName === 'LINK') {
-                const href = child.getAttribute('href');
-                const src = sourceFiles[href];
+                cssLinks.push(child.getAttribute('href'));
+            }
+        }
 
+        const linksToRemove = [];
+
+        for (var i = 0; i < document.head.children.length; i++) {
+            const child = document.head.children[i];
+            if (child.tagName === 'LINK') {
+                if (child.href in blobUrlToSrcUrl) {
+                    const srcUrl = blobUrlToSrcUrl[child.href];
+
+                    if (cssLinks.includes(srcUrl)) {
+                        // TODO: only update if the source changed
+                        // update
+                        const src = sourceFiles[srcUrl];
+                        const blob = new Blob([src], {type : 'text/css'});
+                        const url = URL.createObjectURL(blob);
+                        child.href = url;
+
+                        delete blobUrlToSrcUrl[child.href];
+                        blobUrlToSrcUrl[url] = srcUrl;
+                        srcUrlToBlobUrl[srcUrl] = url;
+                    } else {
+                        // remove
+                        delete blobUrlToSrcUrl[child.href];
+                        delete srcUrlToBlobUrl[srcUrl];
+
+                        linksToRemove.push(child);
+                    }
+                } else {
+                    // this shouldn't happen
+                }
+            }
+        }
+
+        linksToRemove.forEach(link => link.remove());
+
+        for (var i = 0; i < cssLinks.length; i++) {
+            const srcUrl = cssLinks[i];
+            if (!srcUrlToBlobUrl.hasOwnProperty(srcUrl)) {
+                // add
+                const src = sourceFiles[srcUrl];
                 const blob = new Blob([src], {type : 'text/css'});
                 const url = URL.createObjectURL(blob);
-
                 const link = document.createElement('link');
+
                 link.rel = 'stylesheet';
                 link.href = url;
-
                 document.head.appendChild(link);
-                // TODO: create a URL param from src
+
+                blobUrlToSrcUrl[url] = srcUrl;
+                srcUrlToBlobUrl[srcUrl] = url;
             }
         }
 
