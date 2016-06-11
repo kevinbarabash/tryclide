@@ -10,7 +10,8 @@ const initialState = {
     },
     editor: {
         openFiles: ['index.html', 'styles1.css', 'styles2.css'],
-        activeFile: 'index.html'
+        activeFile: 'index.html',
+        selectedFile: 'index.html',
     }
 };
 
@@ -33,6 +34,14 @@ const editorReducer = (state = initialState, action) => {
                     activeFile: action.filename
                 }
             };
+        case 'SELECT_FILE':
+            return {
+                ...state,
+                editor: {
+                    ...state.editor,
+                    selectedFile: action.filename
+                }
+            };
         case 'CLOSE_FILE':
             openFiles = state.editor.openFiles;
             openFiles = openFiles.filter(file => file !== action.filename);
@@ -53,6 +62,18 @@ const editorReducer = (state = initialState, action) => {
                     ...state.files,
                     [state.editor.activeFile]: action.code
                 }
+            };
+        case 'RENAME_FILE':
+            const files = { ...state.files };
+            files[action.new_filename] = files[action.old_filename];
+            delete files[action.old_filename];
+
+            console.log(action);
+            console.log(Object.keys(files));
+
+            return {
+                ...state,
+                files
             };
         case 'SELECT_TAB':
             return {
