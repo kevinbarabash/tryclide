@@ -5,9 +5,20 @@ const sourceFiles = {};
 const srcUrlToBlobUrl = {};
 const blobUrlToSrcUrl = {};
 
+const syncLoad = (url) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, false);
+    xhr.send();
+    return xhr.responseText;
+};
+
+compiledFiles['react'] = syncLoad('lib/react.js');
+compiledFiles['react-dom'] = syncLoad('lib/react-dom.js');
+
 const babelWorker = new Worker('src/babel_worker.js');
 
 const compile = function(filename, code) {
+    console.log(`compiling ${filename}`);
     return new Promise((resolve, reject) => {
         babelWorker.postMessage({
             filename: filename,
@@ -42,11 +53,13 @@ window.require = function(path) {
         const code = compiledFiles[path];
 
         if (code) {
-            const module = {};
+            const module = {
+                exports: {}
+            };
 
             try {
-                const func = new Function("module", code);
-                func(module);
+                const func = new Function("module", "exports", code);
+                func(module, module.exports);
                 modules[path] = module.exports;
                 return modules[path];
             } catch (e) {
@@ -168,7 +181,6 @@ window.addEventListener('message', e => {
             const srcUrl = script.getAttribute('src');
             const newChild = document.createElement('script');
             const code = compiledFiles[srcUrl];
-            console.log(code);
             const blob = new Blob([code], {type : 'text/javascript'});
             const url = URL.createObjectURL(blob);
 

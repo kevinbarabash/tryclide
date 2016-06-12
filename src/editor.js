@@ -100,6 +100,8 @@ class Editor extends Component {
         }
     }
 
+    // TODO: compile the code at the same time that we're linting it
+    // only update it if linting succeeds otherwise throw the result away
     updateCode = debounce(code => {
         this.props.dispatch({
             type: 'UPDATE_FILE',

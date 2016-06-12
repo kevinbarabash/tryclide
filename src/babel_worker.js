@@ -5,7 +5,7 @@ self.addEventListener('message', e => {
 
     try {
         const result = Babel.transform(code, {
-            presets: ['es2015'],
+            presets: ['es2015', 'react'],
         });
 
         self.postMessage({
