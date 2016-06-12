@@ -22,6 +22,7 @@ const compile = function(filename, code) {
 const originalRequestAnimationFrame = window.requestAnimationFrame;
 let i = 0;
 
+// TODO: feed a custom requestAnimationFrame function to all scripts and require contexts
 const createRequestAnimationFrame = () => {
     const j = i++;
     const currentRequestAnimationFrame = callback => {
@@ -60,11 +61,11 @@ window.require = function(path) {
 let inProgress = false;
 
 window.addEventListener('message', e => {
-    if (inProgress) {
-        return;
-    } else {
-        inProgress = true;
-    }
+    // if (inProgress) {
+    //     return;
+    // } else {
+    //     inProgress = true;
+    // }
 
     const changedFiles = Object.keys(e.data.files).filter(
         filename => e.data.files[filename] !== sourceFiles[filename]
@@ -159,24 +160,42 @@ window.addEventListener('message', e => {
             }
         }
 
-        const main = compiledFiles['main.js'];
-        const func = new Function("requestAnimationFrame", main);
+        // Convert from NodeList to Array so it doesn't get modified as we
+        // update the DOM.
+        const scripts = Array.from(document.body.querySelectorAll('script'));
 
-        // TODO: since requestAnimationFrame gets called every 16ms
-        // we could redefine it so that it doesn't call the original
-        // and then when it gets called again because there's still
-        // stuff in the queue it will stop looping
-        const requestAnimationFrame = createRequestAnimationFrame();
-        window.requestAnimationFrame = requestAnimationFrame;
+        scripts.forEach(script => {
+            const srcUrl = script.getAttribute('src');
+            const newChild = document.createElement('script');
+            const code = compiledFiles[srcUrl];
+            console.log(code);
+            const blob = new Blob([code], {type : 'text/javascript'});
+            const url = URL.createObjectURL(blob);
 
-        try {
-            func(requestAnimationFrame);
-        } catch (e) {
-            // TODO: report runtime error to parent frame
-            console.log(e);
-        } finally {
-            inProgress = false;
-        }
+            newChild.src = url;
+            newChild.type = 'text/javascript';
+
+            script.parentElement.replaceChild(newChild, script);
+        });
+
+        // const main = compiledFiles['main.js'];
+        // const func = new Function("requestAnimationFrame", main);
+        //
+        // // TODO: since requestAnimationFrame gets called every 16ms
+        // // we could redefine it so that it doesn't call the original
+        // // and then when it gets called again because there's still
+        // // stuff in the queue it will stop looping
+        // const requestAnimationFrame = createRequestAnimationFrame();
+        // window.requestAnimationFrame = requestAnimationFrame;
+        //
+        // try {
+        //     func(requestAnimationFrame);
+        // } catch (e) {
+        //     // TODO: report runtime error to parent frame
+        //     console.log(e);
+        // } finally {
+        //     inProgress = false;
+        // }
     })();
 });
 

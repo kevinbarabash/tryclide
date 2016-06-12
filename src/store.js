@@ -56,6 +56,7 @@ const editorReducer = (state = initialState, action) => {
             };
         case 'UPDATE_FILE':
             // TODO: check that there's an active file
+            console.log(action);
             return {
                 ...state,
                 files: {
