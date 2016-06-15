@@ -1,12 +1,29 @@
 const { createStore } = require('redux');
 
+const timestamp = Date.now();
+
 const initialState = {
     files: {
-        'index.html': '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="styles1.css">\n<link rel="stylesheet" type="text/css" href="styles2.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<h2>goodbye, world</h2>\n<script src="main.js"></script>\n</body>\n</html>\n',
-        'styles1.css': 'h1 {\n    color: blue;\n}\n',
-        'styles2.css': 'h2 {\n    color: red;\n}\n',
-        'main.js': 'const message = require("message.js");\nconsole.log(message);\n',
-        'message.js': 'module.exports = "hello, world!";\n'
+        'index.html': {
+            contents: '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="styles1.css">\n<link rel="stylesheet" type="text/css" href="styles2.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<h2>goodbye, world</h2>\n<script src="main.js"></script>\n</body>\n</html>\n',
+            timestamp: timestamp
+        },
+        'styles1.css': {
+            contents: 'h1 {\n    color: blue;\n}\n',
+            timestamp: timestamp
+        },
+        'styles2.css': {
+            contents: 'h2 {\n    color: red;\n}\n',
+            timestamp: timestamp
+        },
+        'main.js': {
+            contents: 'const message = require("message.js");\nconsole.log(message);\n',
+            timestamp: timestamp
+        },
+        'message.js': {
+            contents: 'module.exports = "hello, world!";\n',
+            timestamp: timestamp
+        }
     },
     editor: {
         openFiles: ['index.html', 'styles1.css', 'styles2.css'],
@@ -56,21 +73,20 @@ const editorReducer = (state = initialState, action) => {
             };
         case 'UPDATE_FILE':
             // TODO: check that there's an active file
-            console.log(action);
             return {
                 ...state,
                 files: {
                     ...state.files,
-                    [state.editor.activeFile]: action.code
+                    [state.editor.activeFile]: {
+                        contents: action.code,
+                        timestamp: Date.now()
+                    }
                 }
             };
         case 'RENAME_FILE':
             const files = { ...state.files };
             files[action.new_filename] = files[action.old_filename];
             delete files[action.old_filename];
-
-            console.log(action);
-            console.log(Object.keys(files));
 
             return {
                 ...state,

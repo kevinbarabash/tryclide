@@ -51,7 +51,7 @@ class Editor extends Component {
         const editor = ace.edit(container);
         editor.setTheme("ace/theme/chrome");
         editor.setFontSize(this.props.fontSize);
-        editor.$blockScrolling = Infinity
+        editor.$blockScrolling = Infinity;
 
         const session = editor.getSession();
         session.setMode("ace/mode/javascript");
@@ -72,7 +72,7 @@ class Editor extends Component {
         });
 
         const activeFile = this.props.editor.activeFile;
-        const contents = this.props.files[activeFile];
+        const contents = this.props.files[activeFile].contents;
 
         if (activeFile) {
             editor.setValue(contents);
@@ -88,7 +88,7 @@ class Editor extends Component {
             const session = editor.getSession();
             const activeFile = newProps.editor.activeFile;
 
-            this.setContents(newProps.files[newProps.editor.activeFile]);
+            this.setContents(newProps.files[newProps.editor.activeFile].contents);
 
             if (activeFile.endsWith('.js')) {
                 session.setMode("ace/mode/javascript");
