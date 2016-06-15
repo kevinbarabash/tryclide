@@ -135,6 +135,25 @@ function replaceScript(script) {
     }
 }
 
+function addScript(srcUrl) {
+    if (sourceFiles.hasOwnProperty(srcUrl)) {
+        const code = compiledFiles[srcUrl];
+        const blob = new Blob([code], {type : 'text/javascript'});
+        const url = URL.createObjectURL(blob);
+        const script = document.createElement('script');
+
+        script.src = url;
+        script.type = 'text/javascript';
+
+        document.head.appendChild(script);
+
+        blobUrlToSrcUrl[url] = srcUrl;
+        srcUrlToBlobUrl[srcUrl] = url;
+    } else {
+        console.warn(`can't find ${srcUrl}`);
+    }
+}
+
 window.addEventListener('message', e => {
     const oldFilenames = new Set(Object.keys(sourceFiles));
     const newFilenames = new Set(Object.keys(e.data.files));
@@ -193,8 +212,8 @@ window.addEventListener('message', e => {
         const dom = parser.parseFromString(html, 'text/html');
 
         // document.head is read-only so we have to manually copy items over.
-        // We remove all <link> tags before re-adding them so that the order of
-        // <link> tags is always the same as in the source file.
+        // We remove all <link> and <script> tags before re-adding them so that
+        // the order of the tags is always the same as in the source file.
 
         [...document.head.querySelectorAll('link')]
             .forEach(child => child.remove());
@@ -204,6 +223,13 @@ window.addEventListener('message', e => {
                 addLink(child.getAttribute('href'));
             });
 
+        [...document.head.querySelectorAll('script')]
+            .forEach(child => child.remove());
+
+        [...dom.head.querySelectorAll('script')]
+            .forEach(child => addScript(child.getAttribute('src')));
+
+        // TODO: only update the document body if it changed
         document.body = dom.body;
 
         // <script> tags are not executed when replacing document.body so we
