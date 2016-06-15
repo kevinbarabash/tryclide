@@ -92,6 +92,17 @@ const editorReducer = (state = initialState, action) => {
                 ...state,
                 files
             };
+        case 'NEW_FILE':
+            return {
+                ...state,
+                files: {
+                    ...state.files,
+                    'undefined': {
+                        contents: '',
+                        timestamp: Date.now()
+                    }
+                }
+            };
         case 'SELECT_TAB':
             return {
                 ...state,

@@ -65,32 +65,49 @@ class Browser extends Component {
         });
     }
 
+    handleNewFile() {
+        store.dispatch({
+            type: 'NEW_FILE'
+        });
+    }
+
     render() {
         const style = {
             listStyleType: 'none',
-            fontFamily: 'Lucida Grande',
-            fontSize: 14,
             width: 150,
             margin: 0,
             padding: 0,
-            overflow: 'scroll'
+            overflow: 'scroll',
+            flexGrow: 1
+        };
+
+        const containerStyle = {
+            display: 'flex',
+            flexDirection: 'column',
+            fontFamily: 'Lucida Grande',
+            fontSize: 14,
         };
 
         const files = Object.keys(this.props.files);
 
-        return <ul style={style}>
-            {
-                files.map(filename => {
-                    return <EditableListItem
-                        key={filename}
-                        onClick={() => this.handleClick(filename)}
-                        onDoubleClick={() => this.handleDoubleClick(filename)}
-                        selected={filename === this.props.editor.selectedFile}
-                        value={filename}
-                    />;
-                })
-            }
-        </ul>
+        return <div style={containerStyle} onClick={this.handleContainerClick}>
+            <ul style={style}>
+                {
+                    files.map(filename => {
+                        return <EditableListItem
+                            key={filename}
+                            onClick={() => this.handleClick(filename)}
+                            onDoubleClick={() => this.handleDoubleClick(filename)}
+                            selected={filename === this.props.editor.selectedFile}
+                            value={filename}
+                        />;
+                    })
+                }
+            </ul>
+            <div>
+                <span onClick={this.handleNewFile}>New file</span>
+            </div>
+        </div>;
     }
 }
 
