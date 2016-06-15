@@ -2,7 +2,7 @@ const { createStore } = require('redux');
 
 const timestamp = Date.now();
 
-const initialState = {
+const defaultInitialState = {
     files: {
         'index.html': {
             contents: '<html>\n<head>\n<link rel="stylesheet" type="text/css" href="styles1.css">\n<link rel="stylesheet" type="text/css" href="styles2.css">\n</head>\n<body>\n<h1>Hello, world</h1>\n<h2>goodbye, world</h2>\n<script src="main.js"></script>\n</body>\n</html>\n',
@@ -31,6 +31,8 @@ const initialState = {
         selectedFile: 'index.html',
     }
 };
+
+const initialState = JSON.parse(localStorage.getItem("tryclideState")) || defaultInitialState;
 
 const editorReducer = (state = initialState, action) => {
     let openFiles;
@@ -116,4 +118,10 @@ const editorReducer = (state = initialState, action) => {
     }
 };
 
-module.exports = createStore(editorReducer);
+const localStorageReducer = (state = initialState, action) => {
+    const newState = editorReducer(state, action);
+    localStorage.setItem("tryclideState", JSON.stringify(newState));
+    return newState;
+};
+
+module.exports = createStore(localStorageReducer);
