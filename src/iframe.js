@@ -18,12 +18,13 @@ compiledFiles['react-dom'] = syncLoad('lib/react-dom.js');
 const babelWorker = new Worker('src/babel_worker.js');
 
 // TODO: update babelWorker to post a message if the compile fails
-const compile = function(filename, code) {
+const compile = function(filename, code, scope) {
     console.log(`compiling ${filename}`);
     return new Promise((resolve, reject) => {
         babelWorker.postMessage({
             filename: filename,
-            code: code
+            code: code,
+            scope: scope
         });
         babelWorker.addEventListener('message', e => {
             resolve(e.data);
@@ -196,9 +197,10 @@ window.addEventListener('message', e => {
             }
 
             const code = sourceFiles[filename];
+            const scope = filename === 'main.js' ? 'global' : 'module';
 
             if (code) {
-                const result = await compile(filename, code);
+                const result = await compile(filename, code, scope);
                 compiledFiles[result.filename] = result.code;
                 delete modules[filename];
             }
