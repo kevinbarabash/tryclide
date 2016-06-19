@@ -3,6 +3,7 @@ const React = require('react');
 const { Component } = React;
 const { connect } = require('react-redux');
 
+const ContextMenu = require('./context-menu.js');
 const store = require('./store.js');
 
 class EditableListItem extends Component {
@@ -36,40 +37,66 @@ class EditableListItem extends Component {
     render() {
         const style = {
             position: 'relative',
-            backgroundColor: this.props.selected ? '#999' : ''
+            backgroundColor: this.props.selected ? '#999' : '',
+            userSelect: 'none',
+            WebkitUserSelect: 'none'
         };
 
-        return <li onClick={this.props.onClick} style={style}>
+        return <li
+            onContextMenu={(e) => this.props.onContextMenu(e, this.state.value)}
+            onDoubleClick={this.props.onDoubleClick}
+            onClick={this.props.onClick}
+            style={style}
+        >
             {this.state.isEditing &&
                 <input type="text" onChange={this.handleChange} onKeyUp={this.handleKeyUp} value={this.state.value} />}
             {!this.state.isEditing &&
-                <span onDoubleClick={this.props.onDoubleClick}>{this.state.value}</span>}
-            {!this.state.isEditing &&
-                <span style={{position:'absolute',right:0}} onClick={this.handleClick}>edit</span>}
+                <span>{this.state.value}</span>}
         </li>
     }
 }
 
 class Browser extends Component {
-    handleDoubleClick(filename) {
+    state = {
+        contextMenu: null,
+    };
+
+    handleDoubleClick = (filename) => {
         store.dispatch({
             type: 'OPEN_FILE',
             filename: filename
         });
-    }
+    };
 
-    handleClick(filename) {
+    handleClick = (filename) => {
         store.dispatch({
             type: 'SELECT_FILE',
             filename: filename
         });
-    }
+    };
 
-    handleNewFile() {
+    handleNewFile = () => {
         store.dispatch({
             type: 'NEW_FILE'
         });
-    }
+    };
+
+    handleContextMenu = (e, filename) => {
+        e.preventDefault();
+
+        store.dispatch({
+            type: 'SELECT_FILE',
+            filename: filename
+        });
+
+        store.dispatch({
+            type: 'SHOW_CONTEXT_MENU',
+            location: {
+                x: e.pageX,
+                y: e.pageY
+            }
+        });
+    };
 
     render() {
         const style = {
@@ -90,23 +117,30 @@ class Browser extends Component {
 
         const files = Object.keys(this.props.files);
 
+        const { contextMenu } = this.props;
+
         return <div style={containerStyle} onClick={this.handleContainerClick}>
             <ul style={style}>
                 {
-                    files.map(filename => {
-                        return <EditableListItem
+                    files.map(filename =>
+                        <EditableListItem
                             key={filename}
                             onClick={() => this.handleClick(filename)}
                             onDoubleClick={() => this.handleDoubleClick(filename)}
+                            onContextMenu={this.handleContextMenu}
                             selected={filename === this.props.editor.selectedFile}
                             value={filename}
-                        />;
-                    })
+                        />)
                 }
             </ul>
             <div>
                 <span onClick={this.handleNewFile}>New file</span>
             </div>
+            {contextMenu &&
+                <ContextMenu
+                    left={contextMenu.location.x}
+                    top={contextMenu.location.y}
+                />}
         </div>;
     }
 }

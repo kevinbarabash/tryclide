@@ -29,7 +29,8 @@ const defaultInitialState = {
         openFiles: ['index.html', 'styles1.css', 'styles2.css'],
         activeFile: 'index.html',
         selectedFile: 'index.html',
-    }
+    },
+    contextMenu: null,
 };
 
 const initialState = JSON.parse(localStorage.getItem("tryclideState")) || defaultInitialState;
@@ -94,6 +95,19 @@ const editorReducer = (state = initialState, action) => {
                 ...state,
                 files
             };
+        case 'DELETE_FILE':
+            debugger;
+            const files2 = { ...state.files };
+            delete files2[state.editor.selectedFile];
+
+            return {
+                ...state,
+                files: files2,
+                editor: {
+                    ...state.editor,
+                    selectedFile: null
+                }
+            };
         case 'NEW_FILE':
             return {
                 ...state,
@@ -112,6 +126,18 @@ const editorReducer = (state = initialState, action) => {
                     ...state.editor,
                     activeFile: action.filename
                 }
+            };
+        case 'SHOW_CONTEXT_MENU':
+            return {
+                ...state,
+                contextMenu: {
+                    location: action.location
+                }
+            };
+        case 'HIDE_CONTEXT_MENU':
+            return {
+                ...state,
+                contextMenu: null
             };
         default:
             return state;
